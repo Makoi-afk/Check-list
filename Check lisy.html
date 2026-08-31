@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bike Projects Manager</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --accent: #00e5ff;
+            --accent-mtb: #ff9100;
+            --text-main: #ffffff;
+            --text-sub: #a0a0a0;
+            --locked-bg: #181818;
+            --border: #333333;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container { width: 100%; max-width: 500px; }
+        h1 { text-align: center; font-size: 1.5rem; margin-bottom: 20px; color: var(--accent); }
+
+        .cat-grid { display: flex; flex-direction: column; gap: 15px; }
+        .cat-card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 24px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .cat-card:active { transform: scale(0.98); }
+        .cat-card.mtb { border-color: var(--accent-mtb); }
+        .cat-card.road { border-color: var(--accent); }
+        .cat-title { font-size: 1.3rem; font-weight: bold; margin-bottom: 6px; }
+        .cat-card.mtb .cat-title { color: var(--accent-mtb); }
+        .cat-card.road .cat-title { color: var(--accent); }
+        .cat-desc { font-size: 0.85rem; color: var(--text-sub); line-height: 1.4; }
+
+        .nav-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .back-btn {
+            background: #2a2a2a; border: 1px solid var(--border); color: var(--text-main);
+            padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; cursor: pointer;
+        }
+
+        /* TAB NAVIGATION */
+        .tab-menu { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn {
+            flex: 1; padding: 12px; background: #1a1a1a; border: 1px solid var(--border);
+            color: var(--text-sub); border-radius: 10px; font-weight: bold; font-size: 0.9rem; cursor: pointer; text-align: center;
+        }
+        .tab-btn.active { background: var(--card-bg); color: #fff; border-color: var(--accent); }
+        .tab-btn.active.mtb { border-color: var(--accent-mtb); }
+
+        /* CHECKLIST STYLES */
+        .phase-card {
+            background-color: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 12px; padding: 16px; margin-bottom: 16px;
+        }
+        .phase-card.locked { background-color: var(--locked-bg); opacity: 0.4; pointer-events: none; filter: grayscale(1); }
+        .phase-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        .phase-title { font-weight: bold; font-size: 1rem; }
+        .status-badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 12px; background: #333; }
+        .phase-card.active .status-badge { background: var(--accent); color: #000; font-weight: bold; }
+        
+        .task-list { list-style: none; padding: 0; margin: 0; }
+        .task-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #2a2a2a; cursor: pointer; }
+        .task-item:last-child { border-bottom: none; }
+        .task-checkbox { width: 20px; height: 20px; border-radius: 4px; border: 2px solid var(--accent); margin-right: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .task-item.completed .task-checkbox { background-color: var(--accent); }
+        .task-item.completed .task-checkbox::after { content: '✓'; color: #000; font-size: 14px; font-weight: bold; }
+        .task-text { font-size: 0.9rem; line-height: 1.3; }
+        .task-item.completed .task-text { text-decoration: line-through; color: var(--text-sub); }
+
+        /* COST TRACKER STYLES */
+        .budget-card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+        .budget-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px; }
+        .total-amount { font-size: 1.2rem; font-weight: bold; color: #00e676; }
+        .budget-form { display: flex; gap: 8px; margin-bottom: 15px; }
+        .budget-input { background: #121212; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 6px; font-size: 0.85rem; }
+        .budget-input.name { flex: 2; }
+        .budget-input.cost { flex: 1; }
+        .add-btn { background: var(--accent); border: none; color: #000; font-weight: bold; padding: 10px 14px; border-radius: 6px; cursor: pointer; }
+        .budget-list { list-style: none; padding: 0; margin: 0; }
+        .budget-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #2a2a2a; font-size: 0.9rem; }
+        .delete-item { color: #ff4444; cursor: pointer; margin-left: 10px; font-weight: bold; }
+
+        .reset-btn { display: block; width: 100%; padding: 12px; background: none; border: 1px solid #ff4444; color: #ff4444; border-radius: 8px; margin-top: 25px; cursor: pointer; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="app"></div>
+</div>
+
+<script>
+const roadBikeData = [
+    { id: "road_p1", title: "Phase 1: Cockpit & Tires Teardown", tasks: ["Disconnect brake and shift cables from handlebars", "Loosen stem expander bolt and pull out old quill stem", "Unbolt old handlebars & drop levers", "Deflate and pull off old worn tires & tubes from rims", "Inspect wheel rims for trueness and damage"] },
+    { id: "road_p2", title: "Phase 2: Clean & Assess Kept Parts", tasks: ["Wipe down and degrease original drivetrain", "Clean brake calipers and inspect brake pads", "Clean wheel rim braking surfaces", "Wipe down frame tubes"] },
+    { id: "road_p3", title: "Phase 3: Search & Buy Upgrade Parts", tasks: ["Buy 1\" to 1-1/8\" Quill Stem Adapter", "Buy high-rise / short-reach 1-1/8\" threadless stem", "Buy comfortable replacement handlebars", "Buy new 700c tires & fresh inner tubes", "Buy new inner brake/shift cables & housing"] },
+    { id: "road_p4", title: "Phase 4: Reassembly & Modern Cockpit Setup", tasks: ["Mount new tires and tubes onto wheel rims", "Insert Quill Adapter into fork steerer", "Clamp new stem onto adapter and fit new handlebars", "Mount brake levers/shifters onto new setup", "Run fresh cable housing & pull inner cables", "Adjust shifting indexing and set brake pads"] },
+    { id: "road_p5", title: "Phase 5: Final Touches for Client", tasks: ["Wrap new handlebar tape evenly", "Test ride and refine handlebar angle", "Final bolt torque & safety check"] }
+];
+
+const mtbData = [
+    { id: "mtb_p1", title: "Phase 1: Found-Bike Teardown & Assessment", tasks: ["Clear workspace & organize hardware bins", "Strip all parts down to bare frame", "Test moving parts (bottom bracket, headset, wheels)", "Separate broken components from usable ones", "Keep bare frame as base build"] },
+    { id: "mtb_p2", title: "Phase 2: Frame Strip & Full Custom Paint", tasks: ["Apply Kwik Strip paint stripper & scrape paint off", "Dry sand bare frame (220-grit, then 400-grit)", "Wipe bare frame clean with Isopropyl Alcohol", "Mask off bottom bracket, head tube, seat tube", "Spray 1 light coat + 2 medium coats of Aqua 2X Paint", "Spray 2-3 coats of Gloss Clear Coat (Within 1 hr)", "Hang frame & cure undisturbed for 48-72 hours"] },
+    { id: "mtb_p3", title: "Phase 3: Clean Kept Working Parts", tasks: ["Scrub & degrease usable drivetrain parts", "Deep clean usable wheelset, hubs, and cassette", "Polish brake arms and test spring tension"] },
+    { id: "mtb_p4", title: "Phase 4: Order Replacement MTB Parts", tasks: ["Buy missing or worn-out drivetrain components", "Buy replacement MTB tires/tubes", "Buy replacement grips, saddle, or cockpit items", "Buy fresh cable sets and housing"] },
+    { id: "mtb_p5", title: "Phase 5: Full MTB Build Assembly", tasks: ["Install bottom bracket, fork, and headset", "Install wheels into dropouts", "Mount drivetrain, cranks, chain, and derailleurs", "Set up cockpit, shifters, and brake levers", "Route cables and tune shifting & stopping power"] },
+    { id: "mtb_p6", title: "Phase 6: Final Trail-Ready Setup", tasks: ["Install pedals and grips", "Check tire pressures and gear clearance", "Final test ride and brake check"] }
+];
+
+let activeCategory = null;
+let activeSubTab = 'checklist'; // 'checklist' or 'costs'
+
+function loadState() {
+    const saved = localStorage.getItem('bike_dual_project_state');
+    return saved ? JSON.parse(saved) : { tasks: {}, budget: { road: [], mtb: [] } };
+}
+
+function saveState(state) {
+    localStorage.setItem('bike_dual_project_state', JSON.stringify(state));
+}
+
+let state = loadState();
+if (!state.tasks) state.tasks = {};
+if (!state.budget) state.budget = { road: [], mtb: [] };
+
+function render() {
+    const app = document.getElementById('app');
+    app.innerHTML = '';
+
+    if (!activeCategory) {
+        // MAIN CATEGORY SELECTION
+        app.innerHTML = `
+            <h1>🚲 Bike Projects Manager</h1>
+            <div class="cat-grid">
+                <div class="cat-card road" onclick="selectCategory('road')">
+                    <div class="cat-title">🚴 Client Road Bike</div>
+                    <div class="cat-desc">Stem adapter conversion, upright bars, tire replacement.</div>
+                </div>
+                <div class="cat-card mtb" onclick="selectCategory('mtb')">
+                    <div class="cat-title">🚵 Found MTB Project</div>
+                    <div class="cat-desc">Teardown, bare metal paint job, part salvage, and rebuild.</div>
+                </div>
+            </div>
+        `;
+    } else {
+        // PROJECT DASHBOARD
+        const isRoad = activeCategory === 'road';
+        const projectData = isRoad ? roadBikeData : mtbData;
+        const projectTitle = isRoad ? "Client Road Bike" : "Found MTB Restoration";
+
+        // Navigation
+        const nav = document.createElement('div');
+        nav.className = 'nav-bar';
+        nav.innerHTML = `
+            <button class="back-btn" onclick="selectCategory(null)">← Main Menu</button>
+            <span style="font-weight: bold; font-size: 0.9rem; color: ${isRoad ? 'var(--accent)' : 'var(--accent-mtb)'}">${projectTitle}</span>
+        `;
+        app.appendChild(nav);
+
+        // Sub-Category Tabs (Checklist vs Cost)
+        const tabs = document.createElement('div');
+        tabs.className = 'tab-menu';
+        tabs.innerHTML = `
+            <div class="tab-btn ${activeSubTab === 'checklist' ? 'active' : ''} ${!isRoad ? 'mtb' : ''}" onclick="switchTab('checklist')">📋 Checklist</div>
+            <div class="tab-btn ${activeSubTab === 'costs' ? 'active' : ''} ${!isRoad ? 'mtb' : ''}" onclick="switchTab('costs')">💰 Cost Tracker</div>
+        `;
+        app.appendChild(tabs);
+
+        if (activeSubTab === 'checklist') {
+            // CHECKLIST TAB VIEW
+            let previousPhaseComplete = true;
+
+            projectData.forEach((phase) => {
+                const isLocked = !previousPhaseComplete;
+                const phaseTasks = phase.tasks;
+                const completedCount = phaseTasks.filter((_, tIndex) => state.tasks[`${phase.id}_${tIndex}`]).length;
+                const isFinished = completedCount === phaseTasks.length;
+
+                const card = document.createElement('div');
+                card.className = `phase-card ${isLocked ? 'locked' : ''} ${!isFinished && !isLocked ? 'active' : ''}`;
+
+                let statusText = isLocked ? '🔒 Locked' : (isFinished ? '✓ Completed' : `${completedCount}/${phaseTasks.length}`);
+
+                card.innerHTML = `
+                    <div class="phase-header">
+                        <div class="phase-title">${phase.title}</div>
+                        <div class="status-badge">${statusText}</div>
+                    </div>
+                `;
+
+                const list = document.createElement('ul');
+                list.className = 'task-list';
+
+                phaseTasks.forEach((task, tIndex) => {
+                    const key = `${phase.id}_${tIndex}`;
+                    const isChecked = !!state.tasks[key];
+
+                    const item = document.createElement('li');
+                    item.className = `task-item ${isChecked ? 'completed' : ''}`;
+                    item.innerHTML = `
+                        <div class="task-checkbox"></div>
+                        <div class="task-text">${task}</div>
+                    `;
+
+                    if (!isLocked) {
+                        item.onclick = () => toggleTask(key);
+                    }
+                    list.appendChild(item);
+                });
+
+                card.appendChild(list);
+                app.appendChild(card);
+
+                previousPhaseComplete = isFinished;
+            });
+
+        } else {
+            // COST TRACKER TAB VIEW
+            const currentBudget = state.budget[activeCategory] || [];
+            const totalSpent = currentBudget.reduce((sum, item) => sum + item.cost, 0);
+
+            const budgetCard = document.createElement('div');
+            budgetCard.className = 'budget-card';
+            budgetCard.innerHTML = `
+                <div class="budget-header">
+                    <div style="font-weight: bold;">Parts Spent Log</div>
+                    <div class="total-amount">Total: $${totalSpent.toFixed(2)}</div>
+                </div>
+                <div class="budget-form">
+                    <input type="text" id="itemName" class="budget-input name" placeholder="Part name">
+                    <input type="number" id="itemCost" class="budget-input cost" placeholder="$ Price">
+                    <button class="add-btn" style="background:${isRoad ? 'var(--accent)' : 'var(--accent-mtb)'}" onclick="addBudgetItem()">Add</button>
+                </div>
+                <ul class="budget-list" id="budgetList"></ul>
+            `;
+            app.appendChild(budgetCard);
+
+            const listEl = budgetCard.querySelector('#budgetList');
+            currentBudget.forEach((item, bIndex) => {
+                const li = document.createElement('li');
+                li.className = 'budget-item';
+                li.innerHTML = `
+                    <span>${item.name}</span>
+                    <span><strong>$${item.cost.toFixed(2)}</strong> <span class="delete-item" onclick="deleteBudgetItem(${bIndex})">✕</span></span>
+                `;
+                listEl.appendChild(li);
+            });
+        }
+
+        const resetBtn = document.createElement('button');
+        resetBtn.className = 'reset-btn';
+        resetBtn.innerText = `Reset ${projectTitle} Data`;
+        resetBtn.onclick = () => resetProjectProgress(projectData);
+        app.appendChild(resetBtn);
+    }
+}
+
+function selectCategory(cat) {
+    activeCategory = cat;
+    activeSubTab = 'checklist';
+    render();
+}
+
+function switchTab(tab) {
+    activeSubTab = tab;
+    render();
+}
+
+function toggleTask(key) {
+    state.tasks[key] = !state.tasks[key];
+    saveState(state);
+    render();
+}
+
+function addBudgetItem() {
+    const nameInput = document.getElementById('itemName');
+    const costInput = document.getElementById('itemCost');
+    const name = nameInput.value.trim();
+    const cost = parseFloat(costInput.value);
+
+    if (name && !isNaN(cost)) {
+        if (!state.budget[activeCategory]) state.budget[activeCategory] = [];
+        state.budget[activeCategory].push({ name, cost });
+        saveState(state);
+        render();
+    }
+}
+
+function deleteBudgetItem(index) {
+    state.budget[activeCategory].splice(index, 1);
+    saveState(state);
+    render();
+}
+
+function resetProjectProgress(projectData) {
+    if (confirm("Reset checklist AND cost log for this bike?")) {
+        projectData.forEach(phase => {
+            phase.tasks.forEach((_, tIndex) => {
+                delete state.tasks[`${phase.id}_${tIndex}`];
+            });
+        });
+        state.budget[activeCategory] = [];
+        saveState(state);
+        render();
+    }
+}
+
+render();
+</script>
+</body>
+</html>
